@@ -1,0 +1,127 @@
+/* REGISTRASI FONT MICROGRAMMA RESMI PUPUK KUJANG */
+@font-face {
+    font-family: 'Microgramma';
+    src: url('DaysOne-Regular.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+.font-microgramma {
+    font-family: 'Microgramma', 'Arial Black', Arial, sans-serif !important;
+}
+
+/* REGULASI CETAK SERTIFIKAT A4 */
+@page {
+    size: A4 portrait;
+    margin: 0;
+}
+
+@media print {
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    html,
+    body {
+        width: 210mm !important;
+        height: 297mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: #ffffff !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .pdf-page {
+        box-shadow: none !important;
+        border: none !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        max-height: 297mm !important;
+        padding: 8mm 12mm !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* FIX: Memaksa Tanda Tangan/Gambar muncul saat diprint ke PDF */
+    img {
+        display: block !important;
+        visibility: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        opacity: 1 !important;
+    }
+
+    img[src]:not([src=""]) {
+        display: inline-block !important;
+    }
+}
+
+/* TAMPILAN KERTAS PREVIEW */
+.pdf-page {
+    width: 210mm;
+    height: 297mm;
+    max-height: 297mm;
+    padding: 8mm 12mm;
+    background: #ffffff;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    font-size: 80pt;
+    font-weight: 900;
+    color: rgba(0, 0, 0, 0.03);
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+}
+
+/* WARNA ABU-ABU BANNER DOKUMEN (#CCCCCC) */
+.section-bar {
+    background-color: #B2C4F5 !important;
+    color: #000000 !important;
+    font-weight: bold;
+    padding: 2px 6px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.banner-cert-no {
+    border: 1px solid #a1a1aa;
+    background-color: #B2C4F5 !important;
+    border-radius: 2px;
+}
+
+.easycal-table th {
+    background-color: #B2C4F5;
+    border-bottom: 1px solid #000000;
+    padding: 3px;
+    text-align: left;
+}
+
+.easycal-table td {
+    padding: 3px;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+#brotherLabelPreview canvas,
+#brotherLabelPreview img {
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: contain;
+}

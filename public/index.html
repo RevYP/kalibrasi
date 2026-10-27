@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Sertifikasi & Pengujian Instrumen - PT Pupuk Kujang</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS CDN for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- docx.js CDN for Word Export -->
+    <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+    <!-- FileSaver CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- JsBarcode CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <!-- QRCode.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Html5-Qrcode CDN -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- html2canvas CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- PDF.js CDN for EasyCal PDF Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        kujang: {
+                            green: '#006837',
+                            darkgreen: '#004d28',
+                            lightgreen: '#e6f2eb',
+                            teal: '#008080',
+                            gold: '#D4AF37',
+                            accent: '#8DC63F',
+                            emerald: '#059669',
+                            softbg: '#f4f8f5'
+                        }
+                    },
+                    fontFamily: {
+                        microgramma: ['Microgramma', '"Microgramma Bold Extended"', '"Arial Black"', 'Arial', 'sans-serif'],
+                        sans: ['Arial', 'Helvetica', 'sans-serif'],
+                        mono: ['Courier New', 'Courier', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="min-h-screen text-slate-800 flex flex-col bg-slate-100 antialiased">
+
+    <!-- MODAL LOGIN -->
+    <div id="loginModal"
+        class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden border border-emerald-100">
+            <div
+                class="bg-gradient-to-br from-kujang-darkgreen via-kujang-green to-emerald-800 p-6 text-white text-center relative">
+                <div
+                    class="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg p-2 ring-4 ring-emerald-400/30">
+                    <img src="logo_mobile (1).png" alt="Logo Kujang" class="h-14 w-auto object-contain">
+                </div>
+                <h3 class="font-microgramma font-bold text-base tracking-wider uppercase drop-shadow-sm">PT PUPUK KUJANG
+                </h3>
+                <p class="text-xs text-kujang-accent mt-0.5 font-semibold">Departemen Pemeliharaan Listrik Instrumen</p>
+            </div>
+            <div class="p-6 space-y-4">
+                <div id="loginError"
+                    class="hidden p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-xs font-semibold text-center">
+                    Username atau password salah.</div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Username</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-3 top-3 text-slate-400 text-xs"></i>
+                        <input type="text" id="loginUser" placeholder="username"
+                            class="w-full pl-8 pr-3 py-2 border rounded-lg text-xs font-semibold outline-none focus:ring-2 focus:ring-kujang-green focus:border-transparent"
+                            onkeypress="if(event.key==='Enter') executeLoginProcess()">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-400 text-xs"></i>
+                        <input type="password" id="loginPass" placeholder="••••••••"
+                            class="w-full pl-8 pr-3 py-2 border rounded-lg text-xs font-semibold outline-none focus:ring-2 focus:ring-kujang-green focus:border-transparent"
+                            onkeypress="if(event.key==='Enter') executeLoginProcess()">
+                    </div>
+                </div>
+                <button type="button" onclick="executeLoginProcess()"
+                    class="w-full bg-gradient-to-r from-kujang-green to-emerald-700 hover:from-kujang-darkgreen hover:to-emerald-800 text-white font-bold py-2.5 rounded-lg text-xs shadow-md hover:shadow-lg transition">
+                    <i class="fa-solid fa-right-to-bracket mr-1.5"></i> Masuk Sistem
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CAMERA SCANNER -->
+    <div id="scannerModal"
+        class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-white w-full max-w-md rounded-xl shadow-2xl p-5 border space-y-4 overflow-hidden">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2"><i
+                        class="fa-solid fa-camera text-kujang-green"></i> Scan Barcode</h3>
+                <button onclick="closeScannerModal()"
+                    class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
+            </div>
+            <div
+                class="w-full bg-black rounded-lg overflow-hidden relative min-h-[250px] flex items-center justify-center">
+                <div id="cameraReader" class="w-full"></div>
+            </div>
+            <p class="text-[11px] text-slate-500 text-center">Arahkan kamera ke QR Code label instrumen untuk pencarian
+                log otomatis.</p>
+            <div class="flex justify-end border-t pt-2">
+                <button onclick="closeScannerModal()"
+                    class="px-4 py-1.5 rounded text-xs bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL BARCODE LABEL -->
+    <div id="barcodeModal"
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl p-5 border space-y-4 overflow-hidden">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2"><i
+                        class="fa-solid fa-qrcode text-kujang-green"></i> Label Barcode Instrumen</h3>
+                <button onclick="closeBarcodeModal()"
+                    class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-[11px] bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
+                <div><span class="text-slate-500 font-semibold">Tag ID:</span> <span id="labelTagNo"
+                        class="font-bold text-slate-900">-</span></div>
+                <div><span class="text-slate-500 font-semibold">No. Sertifikat:</span> <span id="labelCertNo"
+                        class="font-bold text-slate-900">-</span></div>
+                <div><span class="text-slate-500 font-semibold">Lokasi:</span> <span id="labelLocation"
+                        class="font-bold text-slate-900">-</span></div>
+                <div><span class="text-slate-500 font-semibold">Tgl Kalibrasi:</span> <span id="labelCalDate"
+                        class="font-bold text-slate-900">-</span></div>
+                <div class="col-span-2"><span class="text-slate-500 font-semibold">Due Date:</span> <span
+                        id="labelDueDate" class="font-bold text-slate-900">-</span></div>
+            </div>
+            <div class="flex justify-center my-3 w-full overflow-hidden">
+                <div id="brotherLabelPreview"
+                    class="brother-label-box bg-white flex items-center justify-center text-black p-2 border border-slate-300 rounded-lg shadow-sm"
+                    style="width: 200px; height: 200px;">
+                    <div id="qrCodeSquareContainer" class="flex justify-center items-center"></div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeBarcodeModal()"
+                    class="px-3 py-1.5 rounded text-xs bg-slate-100 hover:bg-slate-200 font-semibold">Batal</button>
+                <button onclick="downloadLabelPNG()"
+                    class="px-3 py-1.5 rounded text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"><i
+                        class="fa-solid fa-download mr-1"></i> PNG</button>
+                <button onclick="printBrotherLabel()"
+                    class="px-3 py-1.5 rounded text-xs bg-kujang-green hover:bg-kujang-darkgreen text-white font-bold"><i
+                        class="fa-solid fa-print mr-1"></i> Cetak Label</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KELOLA MASTER CALIBRATOR -->
+    <div id="masterCalibratorModal"
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-white w-full max-w-4xl rounded-xl shadow-2xl p-5 border space-y-4 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center border-b pb-2 shrink-0">
+                <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2"><i
+                        class="fa-solid fa-database text-kujang-green"></i> Kelola Master Calibrator</h3>
+                <button onclick="closeMasterCalibratorModal()"
+                    class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
+            </div>
+
+            <form onsubmit="handleSaveNewMasterCalibrator(event)"
+                class="bg-emerald-50/50 p-3 rounded-lg border border-emerald-100 space-y-2 text-xs shrink-0">
+                <p id="calFormHeaderTitle" class="font-bold text-slate-800 text-[11px]">Tambah Master Calibrator Baru:
+                </p>
+                <input type="hidden" id="editingCalId" value="">
+                <input type="text" id="newCalName" placeholder="Contoh: Multifunction Process Calibrator"
+                    class="w-full p-1.5 border rounded-md font-semibold outline-none focus:ring-1 focus:ring-kujang-green bg-white"
+                    required>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                    <input type="text" id="newCalModel" placeholder="Model / Type (cth: 8060+)"
+                        class="p-1.5 border rounded-md outline-none focus:ring-1 focus:ring-kujang-green bg-white">
+                    <input type="text" id="newCalSn" placeholder="Serial No. (SN)"
+                        class="p-1.5 border rounded-md font-bold outline-none focus:ring-1 focus:ring-kujang-green bg-white"
+                        required>
+                    <input type="text" id="newCalCertNo" placeholder="No. Sertifikat Standar"
+                        class="p-1.5 border rounded-md font-bold outline-none focus:ring-1 focus:ring-kujang-green bg-white"
+                        required>
+                    <input type="text" id="newCalDate" placeholder="Tgl Kalibrasi (cth: 21 Nov 2025)"
+                        class="p-1.5 border rounded-md outline-none focus:ring-1 focus:ring-kujang-green bg-white">
+                    <input type="text" id="newCalDue" placeholder="Cal Due Date (cth: 20 Nov 2026)"
+                        class="p-1.5 border rounded-md outline-none focus:ring-1 focus:ring-kujang-green bg-white col-span-1 sm:col-span-2 lg:col-span-4">
+                </div>
+                <div class="flex gap-2 pt-1">
+                    <button type="submit" id="btnSaveMasterCal"
+                        class="flex-1 bg-kujang-green hover:bg-kujang-darkgreen text-white font-bold py-1.5 rounded-md transition shadow-sm"><i
+                            class="fa-solid fa-cloud-arrow-up mr-1"></i> Simpan ke DB</button>
+                    <button type="button" id="btnCancelCalEdit" onclick="cancelCalibratorEdit()"
+                        class="hidden px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-1.5 rounded-md transition">Batal</button>
+                </div>
+            </form>
+
+            <div class="flex-1 overflow-y-auto border-t pt-2 text-xs flex flex-col">
+                <p class="font-bold text-slate-700 text-[11px] mb-2">Daftar Master Alat Terdaftar:</p>
+                <div id="masterCalibratorListContainer" class="overflow-x-auto w-full flex-1"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KELOLA PERSONEL -->
+    <div id="addAvpModal"
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-white w-full max-w-md rounded-xl shadow-2xl p-5 border space-y-3 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-2 shrink-0">
+                <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2"><i
+                        class="fa-solid fa-users-gear text-kujang-green"></i> Kelola Personel</h3>
+                <button onclick="closeAddAvpModal()"
+                    class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
+            </div>
+
+            <form onsubmit="handleSavePersonel(event)"
+                class="space-y-3 text-xs shrink-0 bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
+                <input type="hidden" id="editingPersonelId" value="">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Peran Personel</label>
+                    <select id="newPersonRole"
+                        class="w-full p-2 border rounded-md font-bold outline-none bg-white focus:ring-1 focus:ring-kujang-green">
+                        <option value="AVP">AVP Signed</option>
+                        <option value="SUPERVISOR">Approved By (Supervisor / Engineer)</option>
+                        <option value="TEKNISI">Calibrated / Tested By (Teknisi)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="col-span-2">
+                        <label class="block font-bold text-slate-700 mb-1">Nama Lengkap</label>
+                        <input type="text" id="newPersonName" placeholder="Contoh: Egi Andrian Nugraha"
+                            class="w-full p-1.5 border rounded-md font-semibold outline-none focus:ring-1 focus:ring-kujang-green"
+                            required>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Jabatan</label>
+                        <input type="text" id="newPersonTitle" placeholder="Contoh: Staf Workshop Listrik"
+                            class="w-full p-1.5 border rounded-md font-semibold outline-none focus:ring-1 focus:ring-kujang-green"
+                            required>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">NIK</label>
+                        <input type="text" id="newPersonNik" placeholder="Contoh: 3042194"
+                            class="w-full p-1.5 border rounded-md font-semibold outline-none focus:ring-1 focus:ring-kujang-green"
+                            required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Upload Gambar TTD (Opsional)</label>
+                    <input type="file" id="newPersonImgFile" accept="image/*"
+                        class="w-full p-1 border rounded-md bg-white">
+                </div>
+                <div class="flex justify-end gap-2 pt-2 border-t">
+                    <button type="button" onclick="closeAddAvpModal()"
+                        class="px-3 py-1.5 rounded-md text-xs bg-slate-200 hover:bg-slate-300 font-semibold">Tutup</button>
+                    <button type="submit" id="btnSavePersonel"
+                        class="px-4 py-1.5 rounded-md text-xs bg-kujang-green hover:bg-kujang-darkgreen text-white font-bold transition">Simpan
+                        Personel</button>
+                </div>
+            </form>
+
+            <div class="flex-1 overflow-y-auto space-y-2 border-t pt-3 text-xs mt-1">
+                <p class="font-bold text-slate-700 text-[11px]">Daftar Personel Terdaftar:</p>
+                <div id="personelListContainer" class="space-y-1.5"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EXPORT DOKUMEN -->
+    <div id="exportModal"
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl p-5 border flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center border-b pb-3 shrink-0">
+                <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2"><i
+                        class="fa-solid fa-file-export text-emerald-600"></i> Export Laporan</h3>
+                <button onclick="closeExportModal()" class="text-slate-400 font-bold text-lg">&times;</button>
+            </div>
+            <form onsubmit="event.preventDefault(); processExportDocument();"
+                class="space-y-3 text-xs overflow-y-auto py-3">
+                <div>
+                    <label class="block font-bold mb-1">Format Dokumen:</label>
+                    <select id="exportFormatType"
+                        class="w-full border rounded-md p-2 font-bold outline-none focus:ring-1 focus:ring-kujang-green"
+                        onchange="toggleExportDocFields()">
+                        <option value="REPORT">Laporan Resmi JKN (Word .docx)</option>
+                        <option value="DATABASE">Database Cover (Excel .xlsx)</option>
+                    </select>
+                </div>
+                <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <div class="flex justify-between items-center">
+                        <label class="font-bold text-emerald-900 text-[11px]"><i
+                                class="fa-solid fa-calendar-days text-emerald-700"></i> Filter Tanggal
+                            Kalibrasi:</label>
+                        <label class="flex items-center gap-1.5 text-[10.5px] font-bold cursor-pointer"><input
+                                type="checkbox" id="exportAllDates" class="rounded text-kujang-green"
+                                onchange="toggleExportDateInputs()" checked> Semua Data</label>
+                    </div>
+                    <div id="exportDateInputsBox" class="grid grid-cols-2 gap-2 pt-2 hidden">
+                        <div><label class="block font-bold text-[10px] mb-0.5">Mulai</label><input type="date"
+                                id="exportStartDate" class="w-full p-1.5 border rounded-md outline-none"></div>
+                        <div><label class="block font-bold text-[10px] mb-0.5">Selesai</label><input type="date"
+                                id="exportEndDate" class="w-full p-1.5 border rounded-md outline-none"></div>
+                    </div>
+                </div>
+                <div id="reportFieldsBox" class="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2.5">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block font-medium">Nomor Dokumen</label><input type="text" id="expDocNo"
+                                value="PS-PK-WASES-03" class="w-full p-1.5 border rounded-md"
+                                placeholder="PS-PK-WASES-03">
+                        </div>
+                        <div><label class="block font-medium">Nomor Revisi</label><input type="text" id="expRevNo"
+                                value="0" class="w-full p-1.5 border rounded-md" placeholder="0"></div>
+                    </div>
+                    <div class="pt-1 border-t border-slate-200 space-y-2">
+                        <div class="grid grid-cols-2 gap-2 bg-white p-2 rounded-md border">
+                            <div class="col-span-2 font-bold text-kujang-green">1. Pihak Pembuat</div>
+                            <div class="col-span-2"><input type="text" id="makerTitle" value=""
+                                    class="w-full p-1 border rounded-md" placeholder="Jabatan"></div>
+                            <div><input type="text" id="makerName" value="" class="w-full p-1 border rounded-md"
+                                    placeholder="Nama"></div>
+                            <div><input type="text" id="makerNik" value="" class="w-full p-1 border rounded-md"
+                                    placeholder="NIK"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 bg-white p-2 rounded-md border">
+                            <div class="col-span-2 font-bold text-kujang-green">2. Pihak Menyetujui</div>
+                            <div class="col-span-2"><input type="text" id="approverTitle" value=""
+                                    class="w-full p-1 border rounded-md" placeholder="Jabatan"></div>
+                            <div><input type="text" id="approverName" value="" class="w-full p-1 border rounded-md"
+                                    placeholder="Nama"></div>
+                            <div><input type="text" id="approverNik" value="" class="w-full p-1 border rounded-md"
+                                    placeholder="NIK"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2 border-t mt-4">
+                    <button type="button" onclick="closeExportModal()"
+                        class="px-3 py-1.5 rounded-md text-xs bg-slate-100 font-semibold">Batal</button>
+                    <button type="submit"
+                        class="px-4 py-1.5 rounded-md text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition"><i
+                            class="fa-solid fa-download mr-1"></i> Unduh Dokumen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- HEADER UTAMA APLIKASI -->
+    <header
+        class="bg-gradient-to-r from-kujang-darkgreen via-kujang-green to-emerald-800 text-white shadow-xl no-print border-b border-emerald-500/30">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-1.5 rounded-xl shadow-md ring-2 ring-emerald-400/20"><img
+                        src="logo_mobile (1).png" alt="Logo Kujang" class="h-10 w-auto object-contain"></div>
+                <div>
+                    <h1 class="text-base font-microgramma font-bold tracking-wider drop-shadow-sm">PT PUPUK KUJANG
+                        CIKAMPEK</h1>
+                    <p class="text-[11px] text-kujang-accent font-semibold tracking-wide">Sistem Kalibrasi & Governor
+                        Test Record</p>
+                </div>
+            </div>
+            <div class="flex items-center bg-black/25 p-1 rounded-xl gap-1 border border-white/10 backdrop-blur-sm">
+                <button id="navTabCalibration" onclick="switchAppMenu('calibration')"
+                    class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-white text-kujang-green shadow-md"><i
+                        class="fa-solid fa-award"></i> Kalibrasi Instrumen</button>
+                <button id="navTabGovernor" onclick="switchAppMenu('governor')"
+                    class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-white/80 hover:text-white hover:bg-white/10"><i
+                        class="fa-solid fa-sliders"></i> Test Record Governor</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <div
+                    class="bg-emerald-950/40 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-400/20 shadow-inner">
+                    <i class="fa-solid fa-circle-user text-kujang-accent"></i> <span id="currentUserLabel">admin</span>
+                    <button onclick="handleLogout()" title="Logout"
+                        class="text-red-300 hover:text-red-100 ml-1 transition"><i
+                            class="fa-solid fa-power-off"></i></button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- SECTION 1: KALIBRASI INSTRUMEN -->
+    <main id="calibrationView"
+        class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- FORM INPUT KALIBRASI (Kiri) -->
+        <section
+            class="lg:col-span-5 bg-white p-5 rounded-2xl shadow-sm border border-emerald-100/80 h-fit no-print space-y-4">
+            <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+                <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2"><i
+                        class="fa-solid fa-pen-to-square text-kujang-green"></i> Parameter Kalibrasi</h2>
+                <div class="flex gap-1.5">
+                    <label
+                        class="cursor-pointer text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md font-semibold transition flex items-center gap-1 shadow-sm">
+                        <i class="fa-solid fa-file-import"></i> Import EasyCal PDF
+                        <input type="file" accept="application/pdf" class="hidden" onchange="importEasyCalPDF(event)">
+                    </label>
+                    <button type="button" onclick="loadSampleData()"
+                        class="text-xs bg-emerald-50 hover:bg-emerald-100 text-kujang-green border border-emerald-200 px-2.5 py-1 rounded-md font-semibold transition">Isi
+                        Contoh Data</button>
+                </div>
+            </div>
+            <div class="bg-gradient-to-r from-emerald-50 to-teal-50/50 p-3 rounded-xl border border-emerald-100/80">
+                <label class="block font-bold text-slate-900 text-xs mb-1 text-kujang-darkgreen">Klasifikasi Instrumen
+                    Kalibrasi:</label>
+                <select id="instrumentType"
+                    class="w-full border border-emerald-200 rounded-lg p-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-kujang-green outline-none bg-white shadow-sm"
+                    onchange="applyPatentedInstrument()">
+                    <option value="TEMP_ELEMENT">Temperature Element</option>
+                    <option value="TEMP_TRANSMITTER">Temperature Transmitter</option>
+                    <option value="PRESS_TRANSMITTER">Pressure Transmitter</option>
+                    <option value="PRESS_PNEUMATIC">Pressure Pneumatic</option>
+                    <option value="PRESS_SWITCH">Pressure Switch</option>
+                </select>
+            </div>
+            <form id="calibrationForm" class="space-y-4 text-xs" onsubmit="event.preventDefault();">
+                <!-- 1. Header & U.U.T -->
+                <div class="space-y-2">
+                    <h3
+                        class="font-bold text-kujang-green uppercase text-[11px] border-b border-emerald-100 pb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info text-[10px]"></i> 1. Informasi Header & U.U.T.
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">Issued By</label><input
+                                type="text" id="issuedBy" placeholder="Contoh: DPLI"
+                                class="w-full border rounded-md p-1.5 outline-none focus:ring-1 focus:ring-kujang-green">
+                        </div>
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">E-Procedure</label><input
+                                type="text" id="certAddress" value="PS-PK-WASES-03" placeholder="Contoh: PS-PK-WASES-03"
+                                class="w-full border rounded-md p-1.5 outline-none font-semibold focus:ring-1 focus:ring-kujang-green">
+                        </div>
+                        <div class="col-span-2"><label class="block font-semibold mb-0.5 text-slate-700">No.
+                                Sertifikat</label><input type="text" id="certNo"
+                                placeholder="Contoh: 092/LK/WLI/XII/2025"
+                                class="w-full border rounded-md p-1.5 outline-none font-bold text-kujang-darkgreen focus:ring-1 focus:ring-kujang-green">
+                        </div>
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">Tag ID / Kode</label><input
+                                type="text" id="tagNo" placeholder="Contoh: TI-174"
+                                class="w-full border rounded-md p-1.5 font-bold text-slate-900 focus:ring-1 focus:ring-kujang-green">
+                        </div>
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">Merk / Brand</label><input
+                                type="text" id="brandName" placeholder="Contoh: Rosemount"
+                                class="w-full border rounded-md p-1.5 font-bold focus:ring-1 focus:ring-kujang-green">
+                        </div>
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">Storage Location</label><input
+                                type="text" id="storageLocation" placeholder="Contoh: Utility 1B"
+                                class="w-full border rounded-md p-1.5 font-semibold focus:ring-1 focus:ring-kujang-green">
+                        </div>
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">Deskripsi Alat</label><input
+                                type="text" id="instrumentName" placeholder="Contoh: Temperature Element"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"></div>
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">Model / Type</label><input
+                                type="text" id="manufacturer" placeholder="Contoh: D-87484"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green">
+                        </div>
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">Serial No.</label><input
+                                type="text" id="serialNo" placeholder="Contoh: X7002097526"
+                                class="w-full border rounded-md p-1.5 font-semibold focus:ring-1 focus:ring-kujang-green">
+                        </div>
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">Area Operasional</label><input
+                                type="text" id="location" placeholder="Contoh: Workshop"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"></div>
+                        <div class="col-span-2"><label
+                                class="block font-semibold mb-0.5 text-slate-700">Catatan</label><input type="text"
+                                id="comments" placeholder="Contoh: Normal Operation"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"></div>
+                    </div>
+                </div>
+
+                <!-- 2. Procedure -->
+                <div class="space-y-2 pt-2 border-t border-slate-100">
+                    <h3
+                        class="font-bold text-kujang-green uppercase text-[11px] border-b border-emerald-100 pb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-list-check text-[10px]"></i> 2. Prosedur & Kondisi Lingkungan
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block font-bold mb-0.5 text-slate-700">Tipe Prosedur</label><select
+                                id="procedureSelect"
+                                class="w-full border rounded-md p-1.5 font-bold outline-none focus:ring-1 focus:ring-kujang-green bg-white"
+                                onchange="updateProcedureField()">
+                                <option value="TEMPERATURE">TEMPERATURE</option>
+                                <option value="PRESSURE">PRESSURE</option>
+                                <option value="FLOW">FLOW</option>
+                                <option value="LEVEL">LEVEL</option>
+                            </select></div>
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">ID Prosedur</label><input
+                                type="text" id="procedureId" placeholder="Contoh: TI-174"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"></div>
+                    </div>
+                    <div id="errorMethodBox" class="bg-emerald-50/40 p-2 rounded-md border border-emerald-100"><label
+                            class="block font-bold mb-0.5 text-[11px] text-slate-800">Metode % Error:</label><select
+                            id="errorMethod"
+                            class="w-full border rounded-md p-1.5 font-semibold bg-white outline-none focus:ring-1 focus:ring-kujang-green"
+                            onchange="calculateData()">
+                            <option value="SPAN">% of Span</option>
+                            <option value="READING">% of Reading</option>
+                        </select></div>
+                    <div id="ambientContainer"
+                        class="bg-emerald-50/40 p-2 rounded-md border border-emerald-100 space-y-1">
+                        <div class="flex items-center gap-2"><input type="checkbox" id="useAmbientAsZero" checked
+                                class="rounded text-kujang-green cursor-pointer"
+                                onchange="toggleAmbientInput(); resetNominalToCalculated();"><label
+                                for="useAmbientAsZero"
+                                class="font-bold cursor-pointer text-[10.5px] text-slate-800">Suhu Ambient Sbg Titik
+                                0%</label></div>
+                        <div id="ambientValBox" class="flex items-center justify-between pt-1"><span
+                                class="text-[10px] font-semibold text-slate-600">Suhu Ambient (°C):</span><input
+                                type="number" step="any" id="ambientTemp" placeholder="25"
+                                class="w-24 p-1 border rounded-md text-center font-bold focus:ring-1 focus:ring-kujang-green"
+                                oninput="resetNominalToCalculated()"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block font-semibold mb-0.5 text-slate-700" id="tolLabel">Max
+                                Tolerance</label><input type="number" step="any" id="tolerance" placeholder="2.1"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"
+                                oninput="calculateData()"></div>
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">Input Range</label>
+                            <div class="flex gap-1"><input type="number" step="any" id="inputMin" placeholder="0"
+                                    class="w-1/2 border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"
+                                    oninput="resetNominalToCalculated()"><input type="number" step="any" id="inputMax"
+                                    placeholder="400"
+                                    class="w-1/2 border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"
+                                    oninput="resetNominalToCalculated()"></div>
+                        </div>
+                        <div id="outputRangeContainer"><label class="block font-semibold mb-0.5 text-slate-700">Output
+                                Range</label>
+                            <div class="flex gap-1"><input type="number" step="any" id="outputMin" placeholder="0"
+                                    class="w-1/2 border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"
+                                    oninput="resetNominalToCalculated()"><input type="number" step="any" id="outputMax"
+                                    placeholder="400"
+                                    class="w-1/2 border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"
+                                    oninput="resetNominalToCalculated()"></div>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold mb-0.5 text-slate-700">Satuan Input</label>
+                            <select id="unitInSelect"
+                                class="w-full border rounded-md p-1.5 outline-none font-semibold text-xs bg-white focus:ring-1 focus:ring-kujang-green"
+                                onchange="handleUnitChange('In')">
+                                <option value="celcius">celcius (°C)</option>
+                                <option value="bar">bar</option>
+                                <option value="mbar">mbar</option>
+                                <option value="psi">psi</option>
+                                <option value="kg/cm2">kg/cm2</option>
+                                <option value="kPa">kPa</option>
+                                <option value="Mpa">Mpa</option>
+                                <option value="Pa">Pa</option>
+                                <option value="inHg@0C">inHg@0C</option>
+                                <option value="mmH2O@4C">mmH2O@4C</option>
+                                <option value="mmH2O@20C">mmH2O@20C</option>
+                                <option value="inH2O@4C">inH2O@4C</option>
+                                <option value="inH2O@20C">inH2O@20C</option>
+                                <option value="mA">mA</option>
+                                <option value="CUSTOM">Custom Input Unit</option>
+                            </select>
+                            <input type="text" id="unitInCustom" placeholder="Ketik satuan..."
+                                class="w-full border rounded-md p-1.5 mt-1 hidden focus:ring-1 focus:ring-kujang-green"
+                                oninput="calculateData()">
+                        </div>
+
+                        <div id="unitOutBox">
+                            <label class="block font-semibold mb-0.5 text-slate-700">Satuan Output</label>
+                            <select id="unitOutSelect"
+                                class="w-full border rounded-md p-1.5 outline-none font-semibold text-xs bg-white focus:ring-1 focus:ring-kujang-green"
+                                onchange="handleUnitChange('Out')">
+                                <option value="celcius">celcius (°C)</option>
+                                <option value="mA">mA</option>
+                                <option value="bar">bar</option>
+                                <option value="mbar">mbar</option>
+                                <option value="psi">psi</option>
+                                <option value="kg/cm2">kg/cm2</option>
+                                <option value="kPa">kPa</option>
+                                <option value="Mpa">Mpa</option>
+                                <option value="Pa">Pa</option>
+                                <option value="inHg@0C">inHg@0C</option>
+                                <option value="mmH2O@4C">mmH2O@4C</option>
+                                <option value="mmH2O@20C">mmH2O@20C</option>
+                                <option value="inH2O@4C">inH2O@4C</option>
+                                <option value="inH2O@20C">inH2O@20C</option>
+                                <option value="mA">mA</option>
+                                <option value="CUSTOM">Custom</option>
+                            </select>
+                            <input type="text" id="unitOutCustom" placeholder="Ketik satuan..."
+                                class="w-full border rounded-md p-1.5 mt-1 hidden focus:ring-1 focus:ring-kujang-green"
+                                oninput="calculateData()">
+                        </div>
+
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">Tgl Kalibrasi</label><input
+                                type="date" id="certDate"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"
+                                onchange="autoCalculateDueDate()">
+                        </div>
+                        <div><label class="block font-bold mb-0.5 text-slate-700">Due Date</label><input type="date"
+                                id="dueDateCustom"
+                                class="w-full border rounded-md p-1.5 font-bold focus:ring-1 focus:ring-kujang-green"
+                                onchange="updateCommonPreviews()"></div>
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">Suhu Ruangan</label><input
+                                type="text" id="envTemp" value="22.0°C ±4°C" placeholder="22.0°C ±4°C"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"></div>
+                        <div><label class="block font-semibold mb-0.5 text-slate-700">Kelembaban</label><input
+                                type="text" id="envRH" value="50% RH ±10% RH" placeholder="50% RH ±10% RH"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Calibrator & Master -->
+                <div class="space-y-2 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between items-center border-b border-emerald-100 pb-1">
+                        <h3 class="font-bold text-kujang-green uppercase text-[11px] flex items-center gap-1.5"><i
+                                class="fa-solid fa-screws-tilting text-[10px]"></i> 3. Alat Standar</h3>
+                        <div class="flex gap-1">
+                            <button type="button" onclick="openMasterCalibratorModal()"
+                                class="text-[10px] bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2 py-0.5 rounded transition"><i
+                                    class="fa-solid fa-database mr-1"></i> Master</button>
+                            <button type="button" onclick="addCalibratorRow()"
+                                class="text-[10px] bg-kujang-green hover:bg-kujang-darkgreen text-white px-2 py-0.5 rounded transition"><i
+                                    class="fa-solid fa-plus mr-1"></i> Baris</button>
+                        </div>
+                    </div>
+                    <div id="calibratorsContainer" class="space-y-2"></div>
+                </div>
+
+                <!-- 4. Hasil Pengujian & Parameter Pengujian -->
+                <div class="space-y-2 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between items-center border-b border-emerald-100 pb-1">
+                        <h3 class="font-bold text-kujang-green uppercase text-[11px] flex items-center gap-1.5"><i
+                                class="fa-solid fa-chart-line text-[10px]"></i> 4. Hasil & Parameter Pengujian
+                        </h3>
+                        <button type="button" onclick="resetNominalToCalculated()"
+                            class="text-[10px] bg-amber-600 hover:bg-amber-700 text-white px-2 py-0.5 rounded transition"><i
+                                class="fa-solid fa-arrows-rotate mr-1"></i> Hitung Ulang</button>
+                    </div>
+                    <div
+                        class="bg-emerald-50/40 p-2.5 rounded-lg border border-emerald-100 flex items-center justify-between gap-2">
+                        <div class="flex-1">
+                            <label class="block font-bold text-slate-800 mb-1 text-[11px]">Mode / Arah
+                                Pengujian:</label>
+                            <select id="testPointModeSelect"
+                                class="w-full border rounded-md p-1.5 font-bold outline-none bg-white text-xs focus:ring-1 focus:ring-kujang-green"
+                                onchange="handleTestPointModeChange()">
+                                <option value="NAIK">Naik (Upstream)</option>
+                                <option value="NAIK_TURUN">Naik & Turun (Up & Downstream / Hysteresis)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center pt-4 pr-1">
+                            <label
+                                class="flex items-center gap-1.5 text-[11px] font-bold cursor-pointer text-slate-800 bg-white px-2 py-1.5 rounded border border-emerald-200 shadow-sm">
+                                <input type="checkbox" id="useBeforeAfter"
+                                    class="rounded text-kujang-green cursor-pointer" onchange="switchFormat()">
+                                <span class="text-amber-700"><i class="fa-solid fa-code-compare"></i> Before &
+                                    After</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="dynamicInputContainer"></div>
+                </div>
+
+                <!-- 5. Personel -->
+                <div class="space-y-2 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between items-center border-b border-emerald-100 pb-1">
+                        <h3 class="font-bold text-kujang-green uppercase text-[11px] flex items-center gap-1.5"><i
+                                class="fa-solid fa-signature text-[10px]"></i> 5. Penandatangan</h3>
+                        <button type="button" onclick="openAddAvpModal()"
+                            class="text-[10px] bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2 py-0.5 rounded transition"><i
+                                class="fa-solid fa-user-plus mr-1"></i> Kelola Personel</button>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="p-2 bg-emerald-50/30 border border-emerald-100 rounded-lg">
+                            <label class="block font-bold mb-1 text-slate-800">Calibrated by (Teknisi)</label>
+                            <select id="techSelect"
+                                class="w-full border rounded-md p-1.5 font-bold mb-1 bg-white focus:ring-1 focus:ring-kujang-green"
+                                onchange="updateSelectedPerson('tech')"></select>
+                            <div class="grid grid-cols-2 gap-1"><input type="text" id="techName"
+                                    placeholder="Nama Teknisi"
+                                    class="border rounded-md p-1 focus:ring-1 focus:ring-kujang-green"><input
+                                    type="text" id="techNik" placeholder="NIK"
+                                    class="border rounded-md p-1 font-semibold focus:ring-1 focus:ring-kujang-green">
+                            </div>
+                        </div>
+                        <div class="p-2 bg-emerald-50/30 border border-emerald-100 rounded-lg">
+                            <label class="block font-bold mb-1 text-slate-800">Approved by (Supervisor)</label>
+                            <select id="approvedSelect"
+                                class="w-full border rounded-md p-1.5 font-bold mb-1 bg-white focus:ring-1 focus:ring-kujang-green"
+                                onchange="updateSelectedPerson('approved')"></select>
+                            <div class="grid grid-cols-2 gap-1"><input type="text" id="approvedByInput"
+                                    placeholder="Nama Supervisor"
+                                    class="border rounded-md p-1 focus:ring-1 focus:ring-kujang-green"><input
+                                    type="text" id="approvedByNik" placeholder="NIK"
+                                    class="border rounded-md p-1 font-semibold focus:ring-1 focus:ring-kujang-green">
+                            </div>
+                        </div>
+                        <div class="p-2 bg-emerald-50/30 border border-emerald-100 rounded-lg">
+                            <label class="block font-bold mb-1 text-slate-800">AVP Signed</label>
+                            <select id="avpSelect"
+                                class="w-full border rounded-md p-1.5 font-bold mb-1 bg-white focus:ring-1 focus:ring-kujang-green"
+                                onchange="updateSelectedPerson('avp')"></select>
+                            <div class="grid grid-cols-2 gap-1"><input type="text" id="avpNameInput"
+                                    placeholder="Nama AVP"
+                                    class="border rounded-md p-1 focus:ring-1 focus:ring-kujang-green"><input
+                                    type="text" id="avpNikInput" placeholder="NIK"
+                                    class="border rounded-md p-1 font-semibold focus:ring-1 focus:ring-kujang-green">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="button" onclick="saveAndPrintPDF()"
+                        class="w-full bg-gradient-to-r from-kujang-green to-emerald-700 hover:from-kujang-darkgreen hover:to-emerald-800 text-white font-bold py-2.5 rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2"><i
+                            class="fa-solid fa-cloud-arrow-up"></i> Simpan & Cetak (PDF)</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- LIVE PREVIEW PDF KALIBRASI (Kanan) -->
+        <section class="lg:col-span-7 flex flex-col items-center">
+            <div class="w-full flex justify-between items-center mb-3 no-print">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-xs font-bold uppercase text-slate-800 flex items-center gap-1.5"><i
+                            class="fa-solid fa-eye text-kujang-green"></i> Live Document Preview
+                    </h2>
+                    <span id="statusBadge"
+                        class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-sm">PASS</span>
+                </div>
+                <button onclick="openBarcodeModal()"
+                    class="bg-slate-800 hover:bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow-md transition flex items-center gap-1.5"><i
+                        class="fa-solid fa-qrcode text-kujang-gold"></i> Cetak Label Barcode</button>
+            </div>
+
+            <div class="overflow-x-auto w-full flex justify-center pb-8">
+                <div id="pdfContent"
+                    class="pdf-page text-[10px] flex flex-col justify-between leading-tight text-black relative">
+                    <div id="pdfWatermark" class="watermark">PASSED</div>
+                    <div>
+                        <!-- Header PDF -->
+                        <div class="flex items-center justify-between border-b pb-1 border-slate-300 mb-2">
+                            <div class="w-[140px]"><img src="logo_mobile (1).png" alt="Logo"
+                                    class="h-[85px] w-auto object-contain"></div>
+                            <div class="flex-1 text-center px-1">
+                                <h1 class="font-black uppercase tracking-wide text-black m-0 p-0 text-[20px]">
+                                    CALIBRATION CERTIFICATE</h1>
+                                <p class="font-bold text-black mt-0.5 mb-1 p-0 text-[10px]">Issued By: <span
+                                        id="viewIssuedBy">-</span></p>
+                                <div class="w-[70%] mx-auto banner-cert-no text-center py-0.5">
+                                    <p class="italic text-[9.5px] font-bold m-0" id="viewCertAddress"></p>
+                                    <p class="font-extrabold text-[12px] tracking-wider m-0" id="viewCertNo">-</p>
+                                </div>
+                            </div>
+                            <div class="w-[140px]"></div>
+                        </div>
+
+                        <!-- 3 Kolom Info PDF -->
+                        <div class="grid grid-cols-3 gap-2 mb-2">
+                            <div>
+                                <div class="section-bar">U.U.T Information</div>
+                                <div class="space-y-0.5 text-[9.5px]">
+                                    <p><span class="font-bold">ID: </span><span id="viewTagNo"
+                                            class="font-bold">-</span></p>
+                                    <p><span class="font-bold">Merk: </span><span id="viewBrandName"
+                                            class="font-bold">-</span></p>
+                                    <p><span class="font-bold">Storage Loc: </span><span id="viewStorageLocation"
+                                            class="font-bold">-</span></p>
+                                    <p><span class="font-bold">Description: </span><span
+                                            id="viewInstrumentName">-</span></p>
+                                    <p><span class="font-bold">Model: </span><span id="viewManufacturer">-</span></p>
+                                    <p><span class="font-bold">SN: </span><span id="viewSerialNo">-</span></p>
+                                    <p><span class="font-bold">Location:</span><span id="viewLocation">-</span></p>
+                                    <p><span class="font-bold">Comments:</span><span id="viewComments">-</span></p>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="section-bar">Procedure Information</div>
+                                <div class="space-y-0.5 text-[9.5px]">
+                                    <p><span class="font-bold">Procedure:</span><span id="viewProcedure">-</span></p>
+                                    <p><span class="font-bold">Input Range:</span><span id="viewInputRange">-</span></p>
+                                    <p id="viewOutputRangeRow"><span class="font-bold">Output Range:</span><span
+                                            id="viewOutputRange">-</span></p>
+                                    <p><span class="font-bold">Reject Error &gt;:</span><span
+                                            id="viewRejectError">-</span></p>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="section-bar">Calibration Information</div>
+                                <div class="space-y-0.5 text-[9.5px]">
+                                    <p><span class="font-bold">Cal Date : </span><span id="viewCertDate">-</span></p>
+                                    <p><span class="font-bold">Due Date: </span><span id="viewDueDate">-</span></p>
+                                    <p><span class="font-bold">Temp: </span><span id="viewEnvTemp">-</span></p>
+                                    <p><span class="font-bold">RH: </span><span id="viewEnvRH">-</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border-b border-black my-1.5"></div>
+
+                        <!-- Calibrator & Result -->
+                        <div class="mb-2">
+                            <div class="section-bar">Calibrator Information</div>
+                            <table class="w-full text-[9.5px] easycal-table mt-1">
+                                <thead>
+                                    <tr class="font-bold">
+                                        <th class="w-[38%]">Description</th>
+                                        <th class="w-[20%]">Serial No.</th>
+                                        <th class="w-[18%]">Cert No.</th>
+                                        <th class="w-[12%]">Cal Date</th>
+                                        <th class="w-[12%]">Cal Due</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="viewCalibratorsTable"></tbody>
+                            </table>
+                        </div>
+                        <div class="mb-3">
+                            <div class="section-bar">Results:</div>
+                            <div id="dynamicTablePreviewContainer" class="mt-1"></div>
+                        </div>
+                    </div>
+
+                    <!-- Signatures PDF -->
+                    <div class="pt-3 border-t border-slate-400 mt-auto mb-8">
+                        <div class="grid grid-cols-3 gap-3 text-[9px] text-center items-start">
+                            <div>
+                                <p class="font-bold">Calibrated by:</p>
+                                <div class="h-10 flex items-center justify-center mt-0.5"><img id="viewTechSignImg"
+                                        src="" class="h-9 w-auto object-contain hidden"></div>
+                                <p class="font-bold" id="viewTechName">-</p>
+                                <p>NIK. <span class="font-bold" id="viewTechNik">-</span></p>
+                            </div>
+                            <div>
+                                <p class="font-bold">Approved By:</p>
+                                <div class="h-10 flex items-center justify-center mt-0.5"><img id="viewApprovedSignImg"
+                                        src="" class="h-9 w-auto object-contain hidden"></div>
+                                <p class="font-bold" id="viewSuperName">-</p>
+                                <p>NIK. <span class="font-bold" id="viewSuperNik">-</span></p>
+                            </div>
+                            <div>
+                                <p class="font-bold" id="viewAvpTitleLabel">AVP Signed:</p>
+                                <div class="h-10 flex items-center justify-center mt-0.5"><img id="viewAvpSignImg"
+                                        src="" class="h-9 w-auto object-contain hidden"></div>
+                                <p class="font-bold" id="viewAvpName">-</p>
+                                <p>NIK. <span class="font-bold" id="viewAvpNik">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TABEL LOG KALIBRASI + SEARCH -->
+        <section id="logSection"
+            class="lg:col-span-12 bg-white p-5 rounded-2xl shadow-sm border border-emerald-100/80 no-print space-y-4">
+            <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-3">
+                <div class="w-full sm:w-1/2">
+                    <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2"><i
+                            class="fa-solid fa-clock-rotate-left text-kujang-green"></i> Riwayat Sertifikat (<span
+                            id="logCountHeader">0</span>)</h2>
+                    <div class="relative mt-2">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        <input type="text" id="searchLogInput"
+                            placeholder="Cari Tag ID (misal TI-174) / No Sertifikat..."
+                            class="w-full pl-8 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-kujang-green outline-none"
+                            oninput="renderLogTable()">
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 justify-end items-center">
+                    <button id="btnNewCertFromTemplate" onclick="createNewCertFromSelectedTag()" disabled
+                        class="bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow-sm transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-plus"></i> Buat Sertifikat Baru Dari Tag Ini
+                    </button>
+                    <button onclick="downloadSelectedPDFs()"
+                        class="bg-slate-700 hover:bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow-sm transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-print"></i> Cetak PDF Terpilih
+                    </button>
+                    <button onclick="openScannerModal()"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg font-semibold shadow-sm transition flex items-center gap-1.5"><i
+                            class="fa-solid fa-camera"></i> Scan</button>
+                    <button onclick="openExportModal()"
+                        class="bg-teal-700 hover:bg-teal-800 text-white text-xs px-3 py-1.5 rounded-lg font-semibold shadow-sm transition flex items-center gap-1.5"><i
+                            class="fa-solid fa-file-export"></i> Export Excel/Word</button>
+                    <button onclick="clearLogHistory()"
+                        class="bg-red-50 hover:bg-red-100 text-red-600 text-xs px-3 py-1.5 rounded-lg font-semibold border border-red-200 transition"><i
+                            class="fa-solid fa-trash-can"></i> Kosongkan</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-emerald-50/60 border-b border-emerald-100 text-kujang-darkgreen font-bold">
+                            <th class="p-2.5 text-center"><input type="checkbox" onclick="toggleSelectAllLogs(this)"
+                                    class="rounded text-kujang-green cursor-pointer"></th>
+                            <th class="p-2.5">Timestamp</th>
+                            <th class="p-2.5">No. Sertifikat</th>
+                            <th class="p-2.5">Tag ID</th>
+                            <th class="p-2.5">Lokasi</th>
+                            <th class="p-2.5">Tgl Kalibrasi</th>
+                            <th class="p-2.5 text-center">Operasi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody" class="divide-y divide-slate-100 text-slate-800"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- SECTION 2: GOVERNOR TEST RECORD -->
+    <main id="governorView"
+        class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 hidden">
+
+        <!-- FORM INPUT GOVERNOR (Kiri) -->
+        <section
+            class="lg:col-span-5 bg-white p-5 rounded-2xl shadow-sm border border-emerald-100/80 h-fit no-print space-y-4">
+            <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+                <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2"><i
+                        class="fa-solid fa-sliders text-kujang-green"></i> Parameter Governor</h2>
+                <button type="button" onclick="resetGovernorForm()"
+                    class="text-xs bg-emerald-50 text-kujang-green border border-emerald-200 px-2.5 py-1 rounded-md font-semibold transition">Reset
+                    Form</button>
+            </div>
+
+            <form id="governorForm" class="space-y-4 text-xs" onsubmit="event.preventDefault();">
+                <div class="space-y-2">
+                    <h3 class="font-bold text-kujang-green uppercase text-[11px] border-b border-emerald-100 pb-1">1.
+                        Informasi Utama</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block font-medium mb-0.5 text-slate-700">Tanggal Pengujian</label><input
+                                type="date" id="govDate"
+                                class="w-full border rounded-md p-1.5 font-semibold focus:ring-1 focus:ring-kujang-green outline-none"
+                                onchange="updateGovernorPreview()"></div>
+                        <div><label class="block font-medium mb-0.5 text-slate-700">Tag No.</label><input type="text"
+                                id="govTagNo" placeholder="Contoh: GOV-01"
+                                class="w-full border rounded-md p-1.5 font-bold focus:ring-1 focus:ring-kujang-green outline-none"
+                                oninput="updateGovernorPreview()"></div>
+                        <div><label class="block font-medium mb-0.5 text-slate-700">Part No.</label><input type="text"
+                                id="govPartNo" placeholder="Part No"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green outline-none"
+                                oninput="updateGovernorPreview()"></div>
+                        <div><label class="block font-medium mb-0.5 text-slate-700">Serial No.</label><input type="text"
+                                id="govSerialNo" placeholder="SN"
+                                class="w-full border rounded-md p-1.5 font-semibold focus:ring-1 focus:ring-kujang-green outline-none"
+                                oninput="updateGovernorPreview()"></div>
+                        <div><label class="block font-medium mb-0.5 text-slate-700">Governor
+                                Type</label><input type="text" id="govType" placeholder="Contoh: Woodward UG8"
+                                class="w-full border rounded-md p-1.5 font-bold focus:ring-1 focus:ring-kujang-green outline-none"
+                                oninput="updateGovernorPreview()"></div>
+                        <div><label class="block font-medium mb-0.5 text-slate-700">Range</label><input type="text"
+                                id="govRange" placeholder=""
+                                class="w-full border rounded-md p-1.5 font-bold focus:ring-1 focus:ring-kujang-green outline-none"
+                                oninput="updateGovernorPreview()"></div>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-2 border-t border-slate-100">
+                    <h3 class="font-bold text-kujang-green uppercase text-[11px] border-b border-emerald-100 pb-1">2.
+                        Spesifikasi Pengujian
+                    </h3>
+                    <div class="space-y-2">
+                        <div>
+                            <label class="block font-bold text-slate-800 mb-0.5">1. Type of Speed Setting</label>
+                            <select id="govSpeedSetting"
+                                class="w-full border rounded-md p-1.5 font-semibold outline-none focus:ring-1 focus:ring-kujang-green bg-white"
+                                onchange="handleGovSpeedSettingChange()">
+                                <option value="Pneumatic & Dial">Pneumatic & Dial</option>
+                                <option value="Dial">Dial</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-800 mb-0.5">2a. Servo</label>
+                            <input type="text" id="govServo" list="govServoList" placeholder="Pilih atau ketik Servo..."
+                                class="w-full border rounded-md p-1.5 font-semibold outline-none focus:ring-1 focus:ring-kujang-green"
+                                oninput="updateGovernorPreview()">
+                            <datalist id="govServoList">
+                                <option value="Diferential 29 ft-lb">
+                                <option value="Diferential 17 ft-lb">
+                                <option value="Internal">
+                            </datalist>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block font-bold text-slate-800 mb-0.5">2b. Plan</label>
+                                <input type="text" id="govPlan" list="govPlanList"
+                                    placeholder="Pilih atau ketik Plan..."
+                                    class="w-full border rounded-md p-1.5 font-semibold outline-none focus:ring-1 focus:ring-kujang-green"
+                                    oninput="updateGovernorPreview()">
+                                <datalist id="govPlanList">
+                                    <option value="plan a">
+                                    <option value="plan b">
+                                    <option value="plan c">
+                                    <option value="plan d">
+                                </datalist>
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-800 mb-0.5">2c. Quadrant</label>
+                                <input type="text" id="govQuadrant" list="govQuadrantList"
+                                    placeholder="Pilih atau ketik Quadrant..."
+                                    class="w-full border rounded-md p-1.5 font-semibold outline-none focus:ring-1 focus:ring-kujang-green"
+                                    oninput="updateGovernorPreview()">
+                                <datalist id="govQuadrantList">
+                                    <option value="1">
+                                    <option value="2">
+                                    <option value="3">
+                                    <option value="4">
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 p-2 bg-emerald-50/30 border border-emerald-100 rounded-lg">
+                            <div class="col-span-2 font-bold text-[11px] text-slate-800">3. Governor Press Oil</div>
+                            <div><label class="block text-[10px] text-slate-600">PSI CW</label><input type="text"
+                                    id="govPressOilCw" placeholder="PSI"
+                                    class="w-full p-1 border rounded-md focus:ring-1 focus:ring-kujang-green"
+                                    oninput="updateGovernorPreview()"></div>
+                            <div><label class="block text-[10px] text-slate-600">PSI CCW</label><input type="text"
+                                    id="govPressOilCcw" placeholder="PSI"
+                                    class="w-full p-1 border rounded-md focus:ring-1 focus:ring-kujang-green"
+                                    oninput="updateGovernorPreview()"></div>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-800 mb-0.5">4. Needle Valve Set</label>
+                            <input type="text" id="govNeedleValve" list="govNeedleValveList"
+                                placeholder="Pilih atau ketik Needle Valve..."
+                                class="w-full border rounded-md p-1.5 font-semibold outline-none focus:ring-1 focus:ring-kujang-green"
+                                oninput="updateGovernorPreview()">
+                            <datalist id="govNeedleValveList">
+                                <option value="1/8 turn open">
+                                <option value="1/4 turn open">
+                                <option value="1/2 turn open">
+                            </datalist>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="block font-bold text-slate-800 mb-0.5">5. Pneumatic Low
+                                    (PSI)</label><input type="text" id="govPneumaticLow" placeholder="Contoh: 3.0 PSI"
+                                    class="w-full border rounded-md p-1.5 font-bold focus:ring-1 focus:ring-kujang-green"
+                                    oninput="updateGovernorPreview()"></div>
+                            <div><label class="block font-bold text-slate-800 mb-0.5">6. Pneumatic High
+                                    (PSI)</label><input type="text" id="govPneumaticHigh" placeholder="Contoh: 15.0 PSI"
+                                    class="w-full border rounded-md p-1.5 font-bold focus:ring-1 focus:ring-kujang-green"
+                                    oninput="updateGovernorPreview()"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-2 border-t border-slate-100">
+                    <h3 class="font-bold text-kujang-green uppercase text-[11px] border-b border-emerald-100 pb-1">3.
+                        Table Speed vs
+                        Pressure / Dial</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-center border-collapse text-[10px]">
+                            <thead>
+                                <tr class="bg-emerald-50/60 border border-emerald-100 text-kujang-darkgreen">
+                                    <th id="govTableCol1Header" class="p-1 border w-[30%]">PSI</th>
+                                    <th class="p-1 border w-[35%]">CW RPM</th>
+                                    <th class="p-1 border w-[35%]">CCW RPM</th>
+                                </tr>
+                            </thead>
+                            <tbody id="govRpmTableInputs"></tbody>
+                        </table>
+                    </div>
+                    <!-- Input Comments di Bawah Tabel Governor -->
+                    <div class="pt-2">
+                        <label class="block font-bold text-slate-800 mb-0.5">Comments / Catatan</label>
+                        <textarea id="govComments" rows="2"
+                            placeholder="Masukkan catatan pengujian governor jika ada..."
+                            class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green outline-none"
+                            oninput="updateGovernorPreview()"></textarea>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-2 border-t border-slate-100">
+                    <div class="flex justify-between items-center border-b border-emerald-100 pb-1">
+                        <h3 class="font-bold text-kujang-green uppercase text-[11px]">4. Penandatangan</h3>
+                        <button type="button" onclick="openAddAvpModal()"
+                            class="text-[10px] bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2 py-0.5 rounded transition"><i
+                                class="fa-solid fa-user-plus mr-1"></i> Kelola Personel</button>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="p-2 bg-emerald-50/30 border border-emerald-100 rounded-lg">
+                            <label class="block font-bold mb-1 text-slate-800">Tested By</label>
+                            <select id="govTechSelect"
+                                class="w-full border rounded-md p-1.5 font-bold mb-1 bg-white focus:ring-1 focus:ring-kujang-green"
+                                onchange="updateGovernorPerson('tech')"></select>
+                            <input type="text" id="govTechName" placeholder="Nama Teknisi"
+                                class="w-full border rounded-md p-1.5 font-semibold mb-1 focus:ring-1 focus:ring-kujang-green"
+                                oninput="updateGovernorPreview()">
+                            <input type="text" id="govTechTitle" value="(Technician)"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"
+                                oninput="updateGovernorPreview()">
+                        </div>
+                        <div class="p-2 bg-emerald-50/30 border border-emerald-100 rounded-lg">
+                            <label class="block font-bold mb-1 text-slate-800">Approved By</label>
+                            <select id="govCalSelect"
+                                class="w-full border rounded-md p-1.5 font-bold mb-1 bg-white focus:ring-1 focus:ring-kujang-green"
+                                onchange="updateGovernorPerson('cal')"></select>
+                            <input type="text" id="govCalName" placeholder="Nama Engineer"
+                                class="w-full border rounded-md p-1.5 font-semibold mb-1 focus:ring-1 focus:ring-kujang-green"
+                                oninput="updateGovernorPreview()">
+                            <input type="text" id="govCalTitle" value="(Supervisor)"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"
+                                oninput="updateGovernorPreview()">
+                        </div>
+                        <div class="p-2 bg-emerald-50/30 border border-emerald-100 rounded-lg">
+                            <label class="block font-bold mb-1 text-slate-800">AVP Signed</label>
+                            <select id="govAvpSelect"
+                                class="w-full border rounded-md p-1.5 font-bold mb-1 bg-white focus:ring-1 focus:ring-kujang-green"
+                                onchange="updateGovernorPerson('avp')"></select>
+                            <input type="text" id="govAvpName" placeholder="Nama AVP"
+                                class="w-full border rounded-md p-1.5 font-semibold mb-1 focus:ring-1 focus:ring-kujang-green"
+                                oninput="updateGovernorPreview()">
+                            <input type="text" id="govAvpTitle" value="(AVP)"
+                                class="w-full border rounded-md p-1.5 focus:ring-1 focus:ring-kujang-green"
+                                oninput="updateGovernorPreview()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="button" onclick="saveAndPrintGovernorPDF()"
+                        class="w-full bg-gradient-to-r from-kujang-green to-emerald-700 hover:from-kujang-darkgreen hover:to-emerald-800 text-white font-bold py-2.5 rounded-xl shadow-md transition flex items-center justify-center gap-2"><i
+                            class="fa-solid fa-print"></i> Simpan & Cetak Test Record PDF</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- LIVE PREVIEW GOVERNOR (Kanan) -->
+        <section class="lg:col-span-7 flex flex-col items-center">
+            <div class="w-full flex justify-between items-center mb-3 no-print">
+                <h2 class="text-xs font-bold uppercase text-slate-800 flex items-center gap-1.5"><i
+                        class="fa-solid fa-eye text-kujang-green"></i> Live Preview Governor</h2>
+
+            </div>
+            <div class="overflow-x-auto w-full flex justify-center pb-8">
+                <div id="pdfGovContent"
+                    class="pdf-page text-[10.5px] flex flex-col justify-between leading-normal text-black relative bg-white border shadow-md p-8"
+                    style="width: 794px; min-height: 1123px; box-sizing: border-box;">
+                    <div>
+                        <div class="flex items-center justify-between border-b-2 border-black pb-3 mb-4">
+                            <div class="w-[120px]"><img src="logo_mobile (1).png" class="h-16 w-auto object-contain">
+                            </div>
+                            <div class="flex-1 text-center">
+                                <h1 class="font-extrabold text-lg uppercase tracking-wider m-0">PT PUPUK KUJANG CIKAMPEK
+                                </h1>
+                                <h2 class="font-bold text-sm uppercase tracking-wide mt-1">GENERAL TEST RECORD FOR
+                                    GOVERNORS</h2>
+                            </div>
+                            <div class="w-[120px]"></div>
+                        </div>
+                        <div
+                            class="grid grid-cols-2 gap-x-6 gap-y-1 mb-5 text-[11px] bg-slate-50 p-3 rounded border border-slate-200">
+                            <div class="flex"><span class="w-28 font-bold">Date</span><span class="mr-2">:</span><span
+                                    id="viewGovDate" class="font-semibold">-</span></div>
+                            <div class="flex"><span class="w-28 font-bold">Part No</span><span
+                                    class="mr-2">:</span><span id="viewGovPartNo" class="font-semibold">-</span></div>
+                            <div class="flex"><span class="w-28 font-bold">Tag No</span><span class="mr-2">:</span><span
+                                    id="viewGovTagNo" class="font-bold">-</span></div>
+                            <div class="flex"><span class="w-28 font-bold">Serial No</span><span
+                                    class="mr-2">:</span><span id="viewGovSerialNo" class="font-semibold">-</span></div>
+                            <div class="flex"><span class="w-28 font-bold">Governor Type</span><span
+                                    class="mr-2">:</span><span id="viewGovType" class="font-bold">-</span></div>
+                            <div class="flex"><span class="w-28 font-bold">Range</span><span class="mr-2">:</span><span
+                                    id="viewGovRange" class="font-bold">-</span></div>
+                        </div>
+                        <div class="space-y-2 text-[11px] mb-6">
+                            <div class="flex items-start"><span class="w-48 font-bold">1. Type of speed
+                                    setting</span><span class="mr-2">:</span><span id="viewGovSpeedSetting"
+                                    class="font-semibold">-</span></div>
+
+                            <!-- POIN NO. 2 VERTIKAL BERURUTAN -->
+                            <div>
+                                <span class="font-bold">2. Type of Servo</span>
+                                <div class="pl-4 space-y-1 mt-1">
+                                    <div class="flex items-start"><span class="w-44 font-bold">a. Servo</span><span
+                                            class="mr-2">:</span><span id="viewGovServo" class="font-semibold">-</span>
+                                    </div>
+                                    <div class="flex items-start"><span class="w-44 font-bold">b. Plan</span><span
+                                            class="mr-2">:</span><span id="viewGovPlan" class="font-semibold">-</span>
+                                    </div>
+                                    <div class="flex items-start"><span class="w-44 font-bold">c. Quadrant</span><span
+                                            class="mr-2">:</span><span id="viewGovQuadrant"
+                                            class="font-semibold">-</span></div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start"><span class="w-48 font-bold">3. Governor Press Oil</span><span
+                                    class="mr-2">:</span>
+                                <div class="flex-1 space-y-0.5">
+                                    <p id="viewGovPressOilCw">-</p>
+                                    <p id="viewGovPressOilCcw">-</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start"><span class="w-48 font-bold">4. Needle valve set</span><span
+                                    class="mr-2">:</span><span id="viewGovNeedleValve" class="font-semibold">-</span>
+                            </div>
+                            <div class="flex items-start"><span class="w-48 font-bold">5. Pneumatic low
+                                    speed</span><span class="mr-2">:</span><span id="viewGovPneumaticLow"
+                                    class="font-semibold">-</span></div>
+                            <div class="flex items-start"><span class="w-48 font-bold">6. Pneumatic high
+                                    speed</span><span class="mr-2">:</span><span id="viewGovPneumaticHigh"
+                                    class="font-semibold">-</span></div>
+                        </div>
+                        <div class="mb-6">
+                            <table class="w-full text-center border-collapse text-[10.5px] border border-black">
+                                <thead>
+                                    <tr class="bg-slate-100 border-b border-black font-bold">
+                                        <th id="viewGovTableCol1Header" class="p-1.5 border-r border-black w-1/3">PSI
+                                        </th>
+                                        <th class="p-1.5 border-r border-black w-1/3">CW RPM</th>
+                                        <th class="p-1.5 w-1/3">CCW RPM</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="viewGovRpmTableBody" class="divide-y divide-black"></tbody>
+                            </table>
+                            <!-- Tampilan Comments / Catatan di Bawah Tabel -->
+                            <div class="mt-3 text-[11px] border-t border-slate-300 pt-2 flex items-start">
+                                <span class="font-bold w-24">Comments:</span>
+                                <span id="viewGovComments" class="flex-1 whitespace-pre-wrap font-medium">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3 Signatures PDF Governor -->
+                    <div class="pt-6 border-t border-slate-400 mt-auto mb-6">
+                        <div class=" grid grid-cols-3 gap-4 text-[10px] text-center text-black items-start">
+                            <div>
+                                <p class="font-bold text-xs mb-1">Tested by</p>
+                                <div class="h-14 flex items-center justify-center my-1"><img id="viewGovTechSignImg"
+                                        src="" class="h-12 w-auto object-contain hidden"></div>
+                                <p class="font-bold text-sm underline" id="viewGovTechName">-</p>
+                                <p class="italic" id="viewGovTechTitle">( Technician )</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-xs mb-1">Approved by</p>
+                                <div class="h-14 flex items-center justify-center my-1"><img id="viewGovCalSignImg"
+                                        src="" class="h-12 w-auto object-contain hidden"></div>
+                                <p class="font-bold text-sm underline" id="viewGovCalName">-</p>
+                                <p class="italic" id="viewGovCalTitle">( Supervisor )</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-xs mb-1">AVP Signed</p>
+                                <div class="h-14 flex items-center justify-center my-1"><img id="viewGovAvpSignImg"
+                                        src="" class="h-12 w-auto object-contain hidden"></div>
+                                <p class="font-bold text-sm underline" id="viewGovAvpName">-</p>
+                                <p class="italic" id="viewGovAvpTitle">( AVP )</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TABEL LOG GOVERNOR + SEARCH -->
+        <section id="govLogSection"
+            class="lg:col-span-12 bg-white p-5 rounded-2xl shadow-sm border border-emerald-100/80 no-print space-y-4">
+            <div
+                class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-3">
+                <div class="w-full sm:w-1/2">
+                    <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2"><i
+                            class="fa-solid fa-clock-rotate-left text-kujang-green"></i> Riwayat Governor (<span
+                            id="govLogCountHeader">0</span>)</h2>
+                    <div class="relative mt-2">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        <input type="text" id="searchGovLogInput" placeholder="Cari Tag No..."
+                            class="w-full pl-8 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-kujang-green outline-none"
+                            oninput="renderGovLogTable()">
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 justify-end items-center">
+                    <button onclick="downloadSelectedGovernorPDFs()"
+                        class="bg-slate-700 hover:bg-slate-800 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow-sm transition flex items-center gap-1.5"><i
+                            class="fa-solid fa-print"></i> Cetak PDF Terpilih</button>
+                    <button onclick="clearGovLogHistory()"
+                        class="bg-red-50 hover:bg-red-100 text-red-600 text-xs px-3 py-1.5 rounded-lg font-semibold border border-red-200 transition"><i
+                            class="fa-solid fa-trash-can"></i> Kosongkan</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-emerald-50/60 border-b border-emerald-100 text-kujang-darkgreen font-bold">
+                            <th class="p-2.5 text-center"><input type="checkbox" onclick="toggleSelectAllGovLogs(this)"
+                                    class="rounded text-kujang-green cursor-pointer"></th>
+                            <th class="p-2.5">Timestamp</th>
+                            <th class="p-2.5">Tag No</th>
+                            <th class="p-2.5">Tgl Pengujian</th>
+                            <th class="p-2.5">Tested By</th>
+                            <th class="p-2.5">Approved By</th>
+                            <th class="p-2.5 text-center">Operasi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="govLogTableBody" class="divide-y divide-slate-100 text-slate-800"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- FIREBASE SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAPuBf2phsoa09eJrUMtQ6eyyVtpAZEKIU",
+            authDomain: "kalibrasi-instrumen-pkc.firebaseapp.com",
+            projectId: "kalibrasi-instrumen-pkc",
+            storageBucket: "kalibrasi-instrumen-pkc.firebasestorage.app",
+            messagingSenderId: "868561832843",
+            appId: "1:868561832843:web:18db038ce7ff6b5bff7d8e"
+        };
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.firestoreTools = { collection, addDoc, getDocs, doc, deleteDoc, updateDoc, query, orderBy };
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>
