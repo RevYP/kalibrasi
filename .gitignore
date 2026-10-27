@@ -67,3 +67,12 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Abai berkas tanda tangan
+ttdpak*
+ttd*
+
+# Abai berkas Word / Excel dokumen
+*.docx
+*.xlsx
+~$*
